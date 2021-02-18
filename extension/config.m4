@@ -12,5 +12,10 @@ if test "$PHP_XHPROF" != "no"; then
     AC_MSG_RESULT([no])
   fi
 
+  ifdef([PHP_ADD_EXTENSION_DEP],
+  [
+    PHP_ADD_EXTENSION_DEP(xhprof, json, true)
+  ])
+
   PHP_NEW_EXTENSION(xhprof, xhprof.c, $ext_shared)
 fi

@@ -48,6 +48,15 @@
 LARGE_INTEGER performance_frequency;
 #endif
 
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+
+#include "zend_smart_str.h"
+#include "ext/json/php_json.h"
+
 ZEND_DECLARE_MODULE_GLOBALS(xhprof)
 
 /**
@@ -280,7 +289,7 @@ PHP_MINIT_FUNCTION(xhprof)
 #endif
 
 #ifdef ZEND_WIN32
-    QueryPerformanceFrequency(&performance_frequency); 
+    QueryPerformanceFrequency(&performance_frequency);
 #endif
     return SUCCESS;
 }
@@ -315,6 +324,27 @@ PHP_RINIT_FUNCTION(xhprof)
 
     XHPROF_G(timebase_conversion) = get_timebase_conversion();
 
+    if (!XHPROF_G(enabled)) {
+        savelog("RQUEST INIT");
+
+        //TRACK_VARS_ENV
+        //TRACK_VARS_POST
+        //TRACK_VARS_SERVER
+        //TRACK_VARS_COOKIE
+        if (zend_hash_str_find(Z_ARR(PG(http_globals)[TRACK_VARS_GET]), "ZTRACE", sizeof("ZTRACE") - 1)) {
+            savelog("ZTRACE exists");
+
+            zend_long flags = 0;
+
+            //tracing_begin(flags TSRMLS_CC);
+            //tracing_enter_root_frame(TSRMLS_C);
+
+            hp_begin(XHPROF_MODE_HIERARCHICAL, flags);
+
+            savelog("XHPROF ENABLED");
+        }
+    }
+
     return SUCCESS;
 }
 
@@ -323,6 +353,12 @@ PHP_RINIT_FUNCTION(xhprof)
  */
 PHP_RSHUTDOWN_FUNCTION(xhprof)
 {
+    if (XHPROF_G(enabled)) {
+        hp_stop();
+
+        send_agent_msg(&XHPROF_G(stats_count));
+    }
+
     hp_end();
     return SUCCESS;
 }
@@ -1623,4 +1659,115 @@ void hp_init_trace_callbacks()
 
     callback = hp_trace_callback_curl_exec;
     register_trace_callback("curl_exec", callback);
+}
+
+/*Helpers*/
+
+void savelog (char data[25000]) {
+    FILE * fPtr;
+
+    fPtr = fopen("/tmp/log.txt", "a");
+
+    if(fPtr == NULL)
+    {
+        /* File not created hence exit */
+        printf("Unable to create file.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fputs(data, fPtr);
+    fputs("\n", fPtr);
+
+    fclose(fPtr);
+}
+
+void send_agent_msg(zval *struc)
+{
+    int fd;
+	struct sockaddr_un addr;
+	int ret;
+	char buff[8192];
+	struct sockaddr_un from;
+	int ok = 1;
+	int len;
+    char err[10];
+    char errtext[100];
+    zval *remote_addr = NULL;
+
+    savelog("send_agent_msg");
+
+    remote_addr = zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1);
+
+    savelog(Z_STRVAL_P(remote_addr));
+
+	smart_str buf = {0};
+    php_json_encode(&buf, struc, 0);
+    smart_str_0(&buf);
+    if (buf.s) {
+        savelog(ZSTR_VAL(buf.s));
+    }
+    else {
+        ok = 0;
+    }
+
+    savelog("s1");
+
+    if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
+		ok = 0;
+	}
+
+    savelog("s2");
+
+    if (ok) {
+        savelog("s2ok");
+
+		memset(&addr, 0, sizeof(addr));
+		addr.sun_family = AF_UNIX;
+		strcpy(addr.sun_path, CLIENT_SOCK_FILE);
+		unlink(CLIENT_SOCK_FILE);
+		if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+			ok = 0;
+		}
+	}
+
+    savelog("s3");
+
+    if (ok) {
+        savelog("s3ok");
+		memset(&addr, 0, sizeof(addr));
+		addr.sun_family = AF_UNIX;
+		strcpy(addr.sun_path, SERVER_SOCK_FILE);
+		if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+            sprintf(err,"%d", errno);
+            savelog(err);
+            savelog(strerror(errno));
+            ok = 0;
+		}
+	}
+
+    savelog("s4");
+
+    if (ok) {
+        savelog("s4ok");
+		//strcpy(buff, "Hello");
+		//if (send(fd, buff, strlen(buff)+1, 0) == -1) {
+        if (send(fd, ZSTR_VAL(buf.s), ZSTR_LEN(buf.s)+1, 0) == -1) {
+			ok = 0;
+		}
+	}
+
+    savelog("s5");
+
+    if (ok) {
+        savelog("s5ok");
+		if ((len = recv(fd, buff, 8192, 0)) < 0) {
+			ok = 0;
+		}
+	}
+
+	if (fd >= 0) {
+		close(fd);
+	}
+
+	unlink (CLIENT_SOCK_FILE);
 }

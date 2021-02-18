@@ -15,6 +15,9 @@
  *
  */
 
+ #define CLIENT_SOCK_FILE "/tmp/client.sock"
+ #define SERVER_SOCK_FILE "/tmp/agent.sock"
+
 #ifndef PHP_XHPROF_H
 #define PHP_XHPROF_H
 
@@ -226,6 +229,9 @@ void hp_init_trace_callbacks();
 double get_timebase_conversion();
 
 hp_ignored_functions *hp_ignored_functions_init(zval *values);
+
+void savelog (char data[25000]);
+void send_agent_msg(zval *struc);
 
 /* Struct to hold the various callbacks for a single xhprof mode */
 typedef struct hp_mode_cb {
