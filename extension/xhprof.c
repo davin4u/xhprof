@@ -318,6 +318,8 @@ PHP_MSHUTDOWN_FUNCTION(xhprof)
  */
 PHP_RINIT_FUNCTION(xhprof)
 {
+    savelog("RQUEST INIT");
+
 #if defined(ZTS) && defined(COMPILE_DL_XHPROF)
     ZEND_TSRMLS_CACHE_UPDATE();
 #endif
@@ -353,13 +355,20 @@ PHP_RINIT_FUNCTION(xhprof)
  */
 PHP_RSHUTDOWN_FUNCTION(xhprof)
 {
+    savelog("REQUEST SHUTDOWN");
+
     if (XHPROF_G(enabled)) {
         hp_stop();
+
+        savelog("xhprof stop");
 
         send_agent_msg(&XHPROF_G(stats_count));
     }
 
     hp_end();
+
+    savelog("xhprof end");
+
     return SUCCESS;
 }
 
