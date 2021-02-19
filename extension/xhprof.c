@@ -1713,7 +1713,9 @@ void send_agent_msg(zval *struc)
     php_json_encode(&buf, struc, 0);
     smart_str_0(&buf);
     if (buf.s) {
-        savelog((char*) &ZSTR_LEN(buf.s));
+        size_t buf_size = ZSTR_LEN(buf.s);
+
+        savelog((char*) &buf_size);
     }
     else {
         ok = 0;
@@ -1763,6 +1765,8 @@ void send_agent_msg(zval *struc)
         if (send(fd, ZSTR_VAL(buf.s), ZSTR_LEN(buf.s)+1, 0) == -1) {
 			ok = 0;
 		}
+
+        smart_str_free(&buf);
 	}
 
     savelog("s5");
