@@ -1713,7 +1713,7 @@ void send_agent_msg(zval *struc)
     php_json_encode(&buf, struc, 0);
     smart_str_0(&buf);
     if (buf.s) {
-        savelog(ZSTR_VAL(buf.s));
+        savelog(ZSTR_LEN(buf.s));
     }
     else {
         ok = 0;
