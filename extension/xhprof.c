@@ -1672,7 +1672,7 @@ void hp_init_trace_callbacks()
 
 /*Helpers*/
 
-void savelog (char data[25000]) {
+void savelog (char data[600000]) {
     FILE * fPtr;
 
     fPtr = fopen("/tmp/log.txt", "a");
@@ -1713,9 +1713,7 @@ void send_agent_msg(zval *struc)
     php_json_encode(&buf, struc, 0);
     smart_str_0(&buf);
     if (buf.s) {
-        size_t buf_size = ZSTR_LEN(buf.s);
-
-        savelog((char*) &buf_size);
+        savelog(ZSTR_VAL(buf.s));
     }
     else {
         ok = 0;
