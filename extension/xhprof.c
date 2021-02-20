@@ -1776,9 +1776,7 @@ void send_agent_msg(zval *struc)
 		}
 	}
 
-	if (fd >= 0) {
-		close(fd);
-	}
-
+    close(fd);
+    unlink (SERVER_SOCK_FILE);
 	unlink (CLIENT_SOCK_FILE);
 }
