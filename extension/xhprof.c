@@ -1764,9 +1764,13 @@ void send_agent_msg(zval *struc)
 			ok = 0;
 		}
 
+        close(fd);
+        ok = 0;
+
         smart_str_free(&buf);
 	}
 
+    /*
     savelog("s5");
 
     if (ok) {
@@ -1774,9 +1778,8 @@ void send_agent_msg(zval *struc)
 		if ((len = recv(fd, buff, 8192, 0)) < 0) {
 			ok = 0;
 		}
-	}
+	}*/
 
-    close(fd);
     unlink (SERVER_SOCK_FILE);
 	unlink (CLIENT_SOCK_FILE);
 }
