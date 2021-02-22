@@ -1703,9 +1703,9 @@ void send_agent_msg(zval *profile)
     char errtext[100];
     //zval *remote_addr = NULL;
 
-    zval send_data = NULL;
-    zval meta_data = NULL;
-    zval server_data = NULL;
+    zval send_data;
+    zval meta_data;
+    zval server_data;
 
     array_init(&send_data);
     array_init(&server_data);
@@ -1720,7 +1720,7 @@ void send_agent_msg(zval *profile)
     add_assoc_zval(&meta_data, "SERVER", &server_data);
 
     add_assoc_zval(&send_data, "meta", &meta_data);
-    add_assoc_zval(&send_data, "profile", &profile);
+    add_assoc_zval(&send_data, "profile", profile);
 
     savelog("send_agent_msg");
 
@@ -1729,7 +1729,7 @@ void send_agent_msg(zval *profile)
     //savelog(Z_STRVAL_P(remote_addr));
 
 	smart_str buf = {0};
-    php_json_encode(&buf, send_data, 0);
+    php_json_encode(&buf, &send_data, 0);
     smart_str_0(&buf);
     if (buf.s) {
         savelog(ZSTR_VAL(buf.s));
