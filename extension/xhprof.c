@@ -1701,11 +1701,11 @@ void send_agent_msg(zval *profile)
 	int len;
     char err[10];
     char errtext[100];
-    zval *remote_addr = NULL;
+    //zval *remote_addr = NULL;
 
-    zval *send_data = NULL;
-    zval *meta_data = NULL;
-    zval *server_data = NULL;
+    zval send_data = NULL;
+    zval meta_data = NULL;
+    zval server_data = NULL;
 
     array_init(&send_data);
     array_init(&server_data);
