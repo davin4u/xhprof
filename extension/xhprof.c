@@ -1690,7 +1690,7 @@ void savelog (char data[600000]) {
     fclose(fPtr);
 }
 
-void send_agent_msg(zval *struc)
+void send_agent_msg(zval *profile)
 {
     int fd;
 	struct sockaddr_un addr;
@@ -1703,14 +1703,33 @@ void send_agent_msg(zval *struc)
     char errtext[100];
     zval *remote_addr = NULL;
 
+    zval *send_data = NULL;
+    zval *meta_data = NULL;
+    zval *server_data = NULL;
+
+    array_init(&send_data);
+    array_init(&server_data);
+    array_init(&meta_data);
+
+    add_assoc_string(&server_data, "REMOTE_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1)));
+    add_assoc_string(&server_data, "DOCUMENT_ROOT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "DOCUMENT_ROOT", sizeof("DOCUMENT_ROOT") - 1)));
+    add_assoc_string(&server_data, "HTTP_HOST", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_HOST", sizeof("HTTP_HOST") - 1)));
+    add_assoc_string(&server_data, "HTTP_USER_AGENT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_USER_AGENT", sizeof("HTTP_USER_AGENT") - 1)));
+    add_assoc_string(&server_data, "PATH_INFO", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PATH_INFO", sizeof("PATH_INFO") - 1)));
+
+    add_assoc_zval(&meta_data, "SERVER", &server_data);
+
+    add_assoc_zval(&send_data, "meta", &meta_data);
+    add_assoc_zval(&send_data, "profile", &profile);
+
     savelog("send_agent_msg");
 
-    remote_addr = zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1);
+    //remote_addr = zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1);
 
-    savelog(Z_STRVAL_P(remote_addr));
+    //savelog(Z_STRVAL_P(remote_addr));
 
 	smart_str buf = {0};
-    php_json_encode(&buf, struc, 0);
+    php_json_encode(&buf, send_data, 0);
     smart_str_0(&buf);
     if (buf.s) {
         savelog(ZSTR_VAL(buf.s));
