@@ -1706,18 +1706,54 @@ void send_agent_msg(zval *profile)
     zval send_data;
     zval meta_data;
     zval server_data;
+    zval get_data;
 
     array_init(&send_data);
     array_init(&server_data);
     array_init(&meta_data);
 
-    add_assoc_string(&server_data, "REMOTE_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1)));
+    // Collect SERVER variables
     add_assoc_string(&server_data, "DOCUMENT_ROOT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "DOCUMENT_ROOT", sizeof("DOCUMENT_ROOT") - 1)));
+    add_assoc_string(&server_data, "HTTPS", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTPS", sizeof("HTTPS") - 1)));
     add_assoc_string(&server_data, "HTTP_HOST", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_HOST", sizeof("HTTP_HOST") - 1)));
     add_assoc_string(&server_data, "HTTP_USER_AGENT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_USER_AGENT", sizeof("HTTP_USER_AGENT") - 1)));
     add_assoc_string(&server_data, "PATH_INFO", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PATH_INFO", sizeof("PATH_INFO") - 1)));
+    add_assoc_string(&server_data, "PHP_AUTH_USER", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PHP_AUTH_USER", sizeof("PHP_AUTH_USER") - 1)));
+    add_assoc_string(&server_data, "PHP_SELF", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PHP_SELF", sizeof("PHP_SELF") - 1)));
+    add_assoc_string(&server_data, "QUERY_STRING", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "QUERY_STRING", sizeof("QUERY_STRING") - 1)));
+    add_assoc_string(&server_data, "REMOTE_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1)));
+    add_assoc_string(&server_data, "REMOTE_USER", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_USER", sizeof("REMOTE_USER") - 1)));
+    add_assoc_string(&server_data, "REQUEST_METHOD", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_METHOD", sizeof("REQUEST_METHOD") - 1)));
+    add_assoc_string(&server_data, "REQUEST_TIME", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_TIME", sizeof("REQUEST_TIME") - 1)));
+    add_assoc_string(&server_data, "REQUEST_TIME_FLOAT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_TIME_FLOAT", sizeof("REQUEST_TIME_FLOAT") - 1)));
+    add_assoc_string(&server_data, "SERVER_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "SERVER_ADDR", sizeof("SERVER_ADDR") - 1)));
+    add_assoc_string(&server_data, "SERVER_NAME", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "SERVER_NAME", sizeof("SERVER_NAME") - 1)));
+    add_assoc_string(&server_data, "UNIQUE_ID", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "UNIQUE_ID", sizeof("UNIQUE_ID") - 1)));
+
+    savelog("server prepared");
+
+    // Collect GET variables
+    zval globals_get;
+    globals_get = Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]);
+    HashPosition get_data_pos;
+    zval **get_data_item;
+    char *get_data_item_str_index;
+    uint get_data_item_index_length;
+    ulong get_data_item_num_index;
+    for (zend_hash_internal_pointer_reset_ex(globals_get, &get_data_pos);
+         zend_hash_get_current_data_ex(globals_get, (void **) &get_data_item, &get_data_pos) == SUCCESS;
+         zend_hash_move_forward_ex(globals_get, &get_data_pos)
+    ) {
+        switch (zend_hash_get_current_key_ex(globals_get, &get_data_item_str_index, &get_data_item_index_length, &get_data_item_num_index, 0, &get_data_pos)) {
+            case HASH_KEY_IS_STRING:
+                savelog(get_data_item_str_index);
+                add_assoc_string(&get_data, get_data_item_str_index, get_data_item);
+                break;
+        }
+    }
 
     add_assoc_zval(&meta_data, "SERVER", &server_data);
+    add_assoc_zval(&meta_data, "GET", &get_data);
 
     add_assoc_zval(&send_data, "meta", &meta_data);
     add_assoc_zval(&send_data, "profile", profile);
