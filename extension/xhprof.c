@@ -1733,23 +1733,22 @@ void send_agent_msg(zval *profile)
     savelog("server prepared");
 
     // Collect GET variables
-    zval globals_get;
-    globals_get = Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]);
     HashPosition get_data_pos;
-    zval **get_data_item;
-    char *get_data_item_str_index;
-    uint get_data_item_index_length;
-    ulong get_data_item_num_index;
-    for (zend_hash_internal_pointer_reset_ex(globals_get, &get_data_pos);
-         zend_hash_get_current_data_ex(globals_get, (void **) &get_data_item, &get_data_pos) == SUCCESS;
-         zend_hash_move_forward_ex(globals_get, &get_data_pos)
-    ) {
-        switch (zend_hash_get_current_key_ex(globals_get, &get_data_item_str_index, &get_data_item_index_length, &get_data_item_num_index, 0, &get_data_pos)) {
+    zval *get_data_item;
+    zend_string *get_data_item_str_index;
+    zend_ulong get_data_item_num_index = 0;
+
+    zend_hash_internal_pointer_reset_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_pos);
+
+    while (get_data_item = zend_hash_get_current_data_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_pos)) {
+        switch (zend_hash_get_current_key_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_item_str_index, &get_data_item_num_index, &get_data_pos)) {
             case HASH_KEY_IS_STRING:
-                savelog(get_data_item_str_index);
-                add_assoc_string(&get_data, get_data_item_str_index, get_data_item);
+                savelog(Z_STRVAL(get_data_item_str_index));
+                add_assoc_string(&get_data, Z_STRVAL(get_data_item_str_index), get_data_item);
                 break;
         }
+
+        zend_hash_move_forward_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_pos);
     }
 
     add_assoc_zval(&meta_data, "SERVER", &server_data);
