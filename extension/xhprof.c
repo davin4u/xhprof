@@ -1744,7 +1744,7 @@ void send_agent_msg(zval *profile)
         switch (zend_hash_get_current_key_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_item_str_index, &get_data_item_num_index, &get_data_pos)) {
             case HASH_KEY_IS_STRING:
                 savelog(ZSTR_VAL(get_data_item_str_index));
-                add_assoc_string(&get_data, ZSTR_VAL(get_data_item_str_index), get_data_item);
+                add_assoc_string(&get_data, ZSTR_VAL(get_data_item_str_index), Z_STRVAL_P(get_data_item));
                 break;
         }
 
