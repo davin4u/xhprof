@@ -1743,8 +1743,8 @@ void send_agent_msg(zval *profile)
     while (get_data_item = zend_hash_get_current_data_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_pos)) {
         switch (zend_hash_get_current_key_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_item_str_index, &get_data_item_num_index, &get_data_pos)) {
             case HASH_KEY_IS_STRING:
-                savelog(Z_STRVAL(get_data_item_str_index));
-                add_assoc_string(&get_data, Z_STRVAL(get_data_item_str_index), get_data_item);
+                savelog(ZSTR_VAL(get_data_item_str_index));
+                add_assoc_string(&get_data, ZSTR_VAL(get_data_item_str_index), get_data_item);
                 break;
         }
 
