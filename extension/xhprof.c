@@ -325,8 +325,6 @@ PHP_RINIT_FUNCTION(xhprof)
     XHPROF_G(timebase_conversion) = get_timebase_conversion();
 
     if (!XHPROF_G(enabled)) {
-        savelog("RQUEST INIT");
-
         //TRACK_VARS_ENV
         //TRACK_VARS_POST
         //TRACK_VARS_SERVER
@@ -1711,8 +1709,8 @@ void send_agent_msg(zval *profile)
     // Collect SERVER variables
     add_assoc_zval(&server_data, "DOCUMENT_ROOT", zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "DOCUMENT_ROOT", sizeof("DOCUMENT_ROOT") - 1));
     savelog("d1");
-    add_assoc_zval(&server_data, "HTTPS", zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTPS", sizeof("HTTPS") - 1));
-    savelog("d2");
+    //add_assoc_zval(&server_data, "HTTPS", zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTPS", sizeof("HTTPS") - 1));
+    //savelog("d2");
     add_assoc_string(&server_data, "HTTP_HOST", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_HOST", sizeof("HTTP_HOST") - 1)));
     savelog("d3");
     add_assoc_string(&server_data, "HTTP_USER_AGENT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_USER_AGENT", sizeof("HTTP_USER_AGENT") - 1)));
