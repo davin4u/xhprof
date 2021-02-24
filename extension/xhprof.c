@@ -318,8 +318,6 @@ PHP_MSHUTDOWN_FUNCTION(xhprof)
  */
 PHP_RINIT_FUNCTION(xhprof)
 {
-    savelog("RQUEST INIT");
-
 #if defined(ZTS) && defined(COMPILE_DL_XHPROF)
     ZEND_TSRMLS_CACHE_UPDATE();
 #endif
@@ -355,9 +353,9 @@ PHP_RINIT_FUNCTION(xhprof)
  */
 PHP_RSHUTDOWN_FUNCTION(xhprof)
 {
-    savelog("REQUEST SHUTDOWN");
-
     if (XHPROF_G(enabled)) {
+        savelog("REQUEST SHUTDOWN");
+
         hp_stop();
 
         savelog("xhprof stop");
@@ -366,8 +364,6 @@ PHP_RSHUTDOWN_FUNCTION(xhprof)
     }
 
     hp_end();
-
-    savelog("xhprof end");
 
     return SUCCESS;
 }
@@ -1714,20 +1710,35 @@ void send_agent_msg(zval *profile)
 
     // Collect SERVER variables
     add_assoc_string(&server_data, "DOCUMENT_ROOT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "DOCUMENT_ROOT", sizeof("DOCUMENT_ROOT") - 1)));
+    savelog("d1");
     add_assoc_string(&server_data, "HTTPS", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTPS", sizeof("HTTPS") - 1)));
+    savelog("d2");
     add_assoc_string(&server_data, "HTTP_HOST", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_HOST", sizeof("HTTP_HOST") - 1)));
+    savelog("d3");
     add_assoc_string(&server_data, "HTTP_USER_AGENT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_USER_AGENT", sizeof("HTTP_USER_AGENT") - 1)));
+    savelog("d4");
     add_assoc_string(&server_data, "PATH_INFO", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PATH_INFO", sizeof("PATH_INFO") - 1)));
+    savelog("d5");
     add_assoc_string(&server_data, "PHP_AUTH_USER", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PHP_AUTH_USER", sizeof("PHP_AUTH_USER") - 1)));
+    savelog("d6");
     add_assoc_string(&server_data, "PHP_SELF", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PHP_SELF", sizeof("PHP_SELF") - 1)));
+    savelog("d7");
     add_assoc_string(&server_data, "QUERY_STRING", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "QUERY_STRING", sizeof("QUERY_STRING") - 1)));
+    savelog("d8");
     add_assoc_string(&server_data, "REMOTE_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1)));
+    savelog("d9");
     add_assoc_string(&server_data, "REMOTE_USER", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_USER", sizeof("REMOTE_USER") - 1)));
+    savelog("d10");
     add_assoc_string(&server_data, "REQUEST_METHOD", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_METHOD", sizeof("REQUEST_METHOD") - 1)));
+    savelog("d11");
     add_assoc_string(&server_data, "REQUEST_TIME", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_TIME", sizeof("REQUEST_TIME") - 1)));
+    savelog("d12");
     add_assoc_string(&server_data, "REQUEST_TIME_FLOAT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_TIME_FLOAT", sizeof("REQUEST_TIME_FLOAT") - 1)));
+    savelog("d13");
     add_assoc_string(&server_data, "SERVER_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "SERVER_ADDR", sizeof("SERVER_ADDR") - 1)));
+    savelog("d14");
     add_assoc_string(&server_data, "SERVER_NAME", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "SERVER_NAME", sizeof("SERVER_NAME") - 1)));
+    savelog("d15");
     add_assoc_string(&server_data, "UNIQUE_ID", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "UNIQUE_ID", sizeof("UNIQUE_ID") - 1)));
 
     savelog("server prepared");
