@@ -1709,9 +1709,9 @@ void send_agent_msg(zval *profile)
     array_init(&meta_data);
 
     // Collect SERVER variables
-    add_assoc_string(&server_data, "DOCUMENT_ROOT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "DOCUMENT_ROOT", sizeof("DOCUMENT_ROOT") - 1)));
+    add_assoc_zval(&server_data, "DOCUMENT_ROOT", zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "DOCUMENT_ROOT", sizeof("DOCUMENT_ROOT") - 1));
     savelog("d1");
-    add_assoc_string(&server_data, "HTTPS", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTPS", sizeof("HTTPS") - 1)));
+    add_assoc_zval(&server_data, "HTTPS", zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTPS", sizeof("HTTPS") - 1));
     savelog("d2");
     add_assoc_string(&server_data, "HTTP_HOST", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_HOST", sizeof("HTTP_HOST") - 1)));
     savelog("d3");
@@ -1755,7 +1755,7 @@ void send_agent_msg(zval *profile)
         switch (zend_hash_get_current_key_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_item_str_index, &get_data_item_num_index, &get_data_pos)) {
             case HASH_KEY_IS_STRING:
                 savelog(ZSTR_VAL(get_data_item_str_index));
-                add_assoc_string(&get_data, ZSTR_VAL(get_data_item_str_index), Z_STRVAL_P(get_data_item));
+                add_assoc_zval(&get_data, ZSTR_VAL(get_data_item_str_index), get_data_item);
                 break;
         }
 
