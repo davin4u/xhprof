@@ -1704,6 +1704,7 @@ void send_agent_msg(zval *profile)
 
     array_init(&send_data);
     array_init(&server_data);
+    array_init(&get_data);
     array_init(&meta_data);
 
     // Collect SERVER variables
