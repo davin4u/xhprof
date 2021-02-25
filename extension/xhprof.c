@@ -1725,8 +1725,8 @@ void send_agent_msg(zval *profile)
     savelog("d8");
     add_assoc_string(&server_data, "REMOTE_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1)));
     savelog("d9");
-    add_assoc_string(&server_data, "REMOTE_USER", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_USER", sizeof("REMOTE_USER") - 1)));
-    savelog("d10");
+    //add_assoc_string(&server_data, "REMOTE_USER", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_USER", sizeof("REMOTE_USER") - 1)));
+    //savelog("d10");
     add_assoc_string(&server_data, "REQUEST_METHOD", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_METHOD", sizeof("REQUEST_METHOD") - 1)));
     savelog("d11");
     add_assoc_long(&server_data, "REQUEST_TIME", Z_LVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_TIME", sizeof("REQUEST_TIME") - 1)));
@@ -1737,7 +1737,7 @@ void send_agent_msg(zval *profile)
     savelog("d14");
     add_assoc_string(&server_data, "SERVER_NAME", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "SERVER_NAME", sizeof("SERVER_NAME") - 1)));
     savelog("d15");
-    add_assoc_string(&server_data, "UNIQUE_ID", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "UNIQUE_ID", sizeof("UNIQUE_ID") - 1)));
+    //add_assoc_string(&server_data, "UNIQUE_ID", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "UNIQUE_ID", sizeof("UNIQUE_ID") - 1)));
 
     savelog("server prepared");
 
