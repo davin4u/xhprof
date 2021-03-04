@@ -15,8 +15,8 @@
  *
  */
 
- #define CLIENT_SOCK_FILE "/tmp/client.sock"
- #define SERVER_SOCK_FILE "/tmp/agent.sock"
+#define CLIENT_SOCK_FILE "/tmp/client.sock"
+#define SERVER_SOCK_FILE "/tmp/agent.sock"
 
 #ifndef PHP_XHPROF_H
 #define PHP_XHPROF_H
