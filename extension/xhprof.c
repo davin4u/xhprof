@@ -1745,7 +1745,7 @@ void send_agent_msg(zval *profile)
     }
 
     add_assoc_zval(&meta_data, "SERVER", &server_data);
-    add_assoc_zval(&meta_data, "GET", &get_data);
+    add_assoc_zval(&meta_data, "get", &get_data);
 
     add_assoc_zval(&send_data, "meta", &meta_data);
     add_assoc_zval(&send_data, "profile", profile);
