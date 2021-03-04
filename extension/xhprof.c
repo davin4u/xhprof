@@ -1715,6 +1715,7 @@ void send_agent_msg(zval *profile)
     //add_assoc_string(&server_data, "PHP_AUTH_USER", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PHP_AUTH_USER", sizeof("PHP_AUTH_USER") - 1)));
     add_assoc_string(&server_data, "PHP_SELF", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PHP_SELF", sizeof("PHP_SELF") - 1)));
     add_assoc_string(&server_data, "QUERY_STRING", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "QUERY_STRING", sizeof("QUERY_STRING") - 1)));
+    add_assoc_string(&server_data, "REQUEST_URI", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_URI", sizeof("REQUEST_URI") - 1)));
     add_assoc_string(&server_data, "REMOTE_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1)));
     //add_assoc_string(&server_data, "REMOTE_USER", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_USER", sizeof("REMOTE_USER") - 1)));
     add_assoc_string(&server_data, "REQUEST_METHOD", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_METHOD", sizeof("REQUEST_METHOD") - 1)));
