@@ -1700,27 +1700,13 @@ void send_agent_msg(zval *profile)
     zval meta_data;
     zval server_data;
     zval get_data;
+    zval env_data;
 
     array_init(&send_data);
     array_init(&server_data);
     array_init(&get_data);
     array_init(&meta_data);
-
-    // Collect SERVER variables
-    /*add_assoc_zval(&server_data, "DOCUMENT_ROOT", zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "DOCUMENT_ROOT", sizeof("DOCUMENT_ROOT") - 1));
-    add_assoc_string(&server_data, "HTTP_HOST", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_HOST", sizeof("HTTP_HOST") - 1)));
-    add_assoc_string(&server_data, "HTTP_USER_AGENT", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_USER_AGENT", sizeof("HTTP_USER_AGENT") - 1)));
-    add_assoc_string(&server_data, "PATH_INFO", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PATH_INFO", sizeof("PATH_INFO") - 1)));
-    add_assoc_string(&server_data, "PHP_SELF", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "PHP_SELF", sizeof("PHP_SELF") - 1)));
-    add_assoc_string(&server_data, "QUERY_STRING", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "QUERY_STRING", sizeof("QUERY_STRING") - 1)));
-    add_assoc_string(&server_data, "REQUEST_URI", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_URI", sizeof("REQUEST_URI") - 1)));
-    add_assoc_string(&server_data, "REMOTE_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REMOTE_ADDR", sizeof("REMOTE_ADDR") - 1)));
-    add_assoc_string(&server_data, "REQUEST_METHOD", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_METHOD", sizeof("REQUEST_METHOD") - 1)));
-    add_assoc_long(&server_data, "REQUEST_TIME", Z_LVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_TIME", sizeof("REQUEST_TIME") - 1)));
-    add_assoc_double(&server_data, "REQUEST_TIME_FLOAT", Z_DVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_TIME_FLOAT", sizeof("REQUEST_TIME_FLOAT") - 1)));
-    add_assoc_string(&server_data, "SERVER_ADDR", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "SERVER_ADDR", sizeof("SERVER_ADDR") - 1)));
-    add_assoc_string(&server_data, "SERVER_NAME", Z_STRVAL_P(zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "SERVER_NAME", sizeof("SERVER_NAME") - 1)));
-    */
+    array_init(&env_data);
 
     // Collect SERVER variables
     HashPosition server_data_pos;
@@ -1728,17 +1714,33 @@ void send_agent_msg(zval *profile)
     zend_string *server_data_item_str_index;
     zend_ulong server_data_item_num_index = 0;
 
-    savelog("SERVER:");
-
     while (server_data_item = zend_hash_get_current_data_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), &server_data_pos)) {
         switch (zend_hash_get_current_key_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), &server_data_item_str_index, &server_data_item_num_index, &server_data_pos)) {
             case HASH_KEY_IS_STRING:
-                savelog(ZSTR_VAL(server_data_item_str_index));
                 add_assoc_zval(&server_data, ZSTR_VAL(server_data_item_str_index), server_data_item);
                 break;
         }
 
         zend_hash_move_forward_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), &server_data_pos);
+    }
+
+    // Collect ENV variables
+    HashPosition env_data_pos;
+    zval *env_data_item;
+    zend_string *env_data_item_str_index;
+    zend_ulong env_data_item_num_index = 0;
+
+    savelog("ENV:");
+
+    while (env_data_item = zend_hash_get_current_data_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_ENV]), &env_data_pos)) {
+        switch (zend_hash_get_current_key_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_ENV]), &env_data_item_str_index, &env_data_item_num_index, &env_data_pos)) {
+            case HASH_KEY_IS_STRING:
+                savelog(ZSTR_VAL(env_data_item_str_index));
+                add_assoc_zval(&env_data, ZSTR_VAL(env_data_item_str_index), env_data_item);
+                break;
+        }
+
+        zend_hash_move_forward_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_ENV]), &env_data_pos);
     }
 
     // Collect GET variables
@@ -1762,6 +1764,7 @@ void send_agent_msg(zval *profile)
 
     add_assoc_zval(&meta_data, "SERVER", &server_data);
     add_assoc_zval(&meta_data, "get", &get_data);
+    add_assoc_zval(&meta_data, "env", &env_data);
 
     add_assoc_zval(&send_data, "meta", &meta_data);
     add_assoc_zval(&send_data, "profile", profile);
