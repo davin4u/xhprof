@@ -1699,18 +1699,22 @@ void send_agent_msg(zval *profile)
     smart_str_0(&buf);
 
     if (buf.s) {
+        savelog("s1");
         if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) > 0) {
+            savelog("s2");
             memset(&addr, 0, sizeof(addr));
             addr.sun_family = AF_UNIX;
             strcpy(addr.sun_path, CLIENT_SOCK_FILE);
             unlink(CLIENT_SOCK_FILE);
 
             if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) > 0) {
+                savelog("s3");
                 memset(&addr, 0, sizeof(addr));
                 addr.sun_family = AF_UNIX;
                 strcpy(addr.sun_path, SERVER_SOCK_FILE);
 
                 if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) != -1) {
+                    savelog("s4");
                     //sprintf(err,"%d", errno);
                     //savelog(err);
                     //savelog(strerror(errno));
