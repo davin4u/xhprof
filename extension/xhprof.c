@@ -1707,7 +1707,7 @@ void send_agent_msg(zval *profile)
             strcpy(addr.sun_path, CLIENT_SOCK_FILE);
             unlink(CLIENT_SOCK_FILE);
 
-            if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) > 0) {
+            if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
                 savelog("s3");
                 memset(&addr, 0, sizeof(addr));
                 addr.sun_family = AF_UNIX;
