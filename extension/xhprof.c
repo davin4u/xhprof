@@ -1688,57 +1688,44 @@ void send_agent_msg(zval *profile)
 {
     int fd;
 	struct sockaddr_un addr;
-	int ok = 1;
     //char err[10];
 
     zval send_data;
-
     send_data = prepare_profile_data(profile);
 
     // Encode profile data to json
 	smart_str buf = {0};
     php_json_encode(&buf, &send_data, 0);
     smart_str_0(&buf);
+
     if (buf.s) {
-        savelog(ZSTR_VAL(buf.s));
+        if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) > 0) {
+            memset(&addr, 0, sizeof(addr));
+            addr.sun_family = AF_UNIX;
+            strcpy(addr.sun_path, CLIENT_SOCK_FILE);
+            unlink(CLIENT_SOCK_FILE);
+
+            if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) > 0) {
+                memset(&addr, 0, sizeof(addr));
+                addr.sun_family = AF_UNIX;
+                strcpy(addr.sun_path, SERVER_SOCK_FILE);
+
+                if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) != -1) {
+                    //sprintf(err,"%d", errno);
+                    //savelog(err);
+                    //savelog(strerror(errno));
+
+                    if (send(fd, ZSTR_VAL(buf.s), ZSTR_LEN(buf.s)+1, 0) == -1) {
+                        savelog("Can't send data to agent.");
+                    }
+
+                    close(fd);
+                }
+            }
+        }
     }
-    else {
-        ok = 0;
-    }
 
-    if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
-		ok = 0;
-	}
-
-    if (ok) {
-		memset(&addr, 0, sizeof(addr));
-		addr.sun_family = AF_UNIX;
-		strcpy(addr.sun_path, CLIENT_SOCK_FILE);
-		unlink(CLIENT_SOCK_FILE);
-		if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-			ok = 0;
-		}
-	}
-
-    if (ok) {
-		memset(&addr, 0, sizeof(addr));
-		addr.sun_family = AF_UNIX;
-		strcpy(addr.sun_path, SERVER_SOCK_FILE);
-		if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-            //sprintf(err,"%d", errno);
-            //savelog(err);
-            //savelog(strerror(errno));
-            ok = 0;
-		}
-	}
-
-    if (ok) {
-        if (send(fd, ZSTR_VAL(buf.s), ZSTR_LEN(buf.s)+1, 0) == -1) {
-			ok = 0;
-		}
-        close(fd);
-        smart_str_free(&buf);
-	}
+    smart_str_free(&buf);
 
 	unlink (CLIENT_SOCK_FILE);
 }
