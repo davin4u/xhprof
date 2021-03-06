@@ -231,7 +231,8 @@ double get_timebase_conversion();
 hp_ignored_functions *hp_ignored_functions_init(zval *values);
 
 void savelog (char data[25000]);
-void send_agent_msg(zval *struc);
+void send_agent_msg(zval *profile);
+zval prepare_profile_data(zval *profile);
 
 /* Struct to hold the various callbacks for a single xhprof mode */
 typedef struct hp_mode_cb {

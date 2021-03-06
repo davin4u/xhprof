@@ -1688,14 +1688,63 @@ void send_agent_msg(zval *profile)
 {
     int fd;
 	struct sockaddr_un addr;
-	int ret;
-	char buff[8192];
-	struct sockaddr_un from;
 	int ok = 1;
-	int len;
-    char err[10];
-    char errtext[100];
+    //char err[10];
 
+    zval send_data;
+
+    send_data = prepare_profile_data(profile);
+
+    // Encode profile data to json
+	smart_str buf = {0};
+    php_json_encode(&buf, &send_data, 0);
+    smart_str_0(&buf);
+    if (buf.s) {
+        savelog(ZSTR_VAL(buf.s));
+    }
+    else {
+        ok = 0;
+    }
+
+    if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
+		ok = 0;
+	}
+
+    if (ok) {
+		memset(&addr, 0, sizeof(addr));
+		addr.sun_family = AF_UNIX;
+		strcpy(addr.sun_path, CLIENT_SOCK_FILE);
+		unlink(CLIENT_SOCK_FILE);
+		if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+			ok = 0;
+		}
+	}
+
+    if (ok) {
+		memset(&addr, 0, sizeof(addr));
+		addr.sun_family = AF_UNIX;
+		strcpy(addr.sun_path, SERVER_SOCK_FILE);
+		if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+            //sprintf(err,"%d", errno);
+            //savelog(err);
+            //savelog(strerror(errno));
+            ok = 0;
+		}
+	}
+
+    if (ok) {
+        if (send(fd, ZSTR_VAL(buf.s), ZSTR_LEN(buf.s)+1, 0) == -1) {
+			ok = 0;
+		}
+        close(fd);
+        smart_str_free(&buf);
+	}
+
+	unlink (CLIENT_SOCK_FILE);
+}
+
+zval prepare_profile_data(zval *profile)
+{
     zval send_data;
     zval meta_data;
     zval server_data;
@@ -1703,9 +1752,9 @@ void send_agent_msg(zval *profile)
     zval env_data;
 
     array_init(&send_data);
+    array_init(&meta_data);
     array_init(&server_data);
     array_init(&get_data);
-    array_init(&meta_data);
     array_init(&env_data);
 
     // Collect SERVER variables
@@ -1730,12 +1779,9 @@ void send_agent_msg(zval *profile)
     zend_string *env_data_item_str_index;
     zend_ulong env_data_item_num_index = 0;
 
-    savelog("ENV:");
-
     while (env_data_item = zend_hash_get_current_data_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_ENV]), &env_data_pos)) {
         switch (zend_hash_get_current_key_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_ENV]), &env_data_item_str_index, &env_data_item_num_index, &env_data_pos)) {
             case HASH_KEY_IS_STRING:
-                savelog(ZSTR_VAL(env_data_item_str_index));
                 add_assoc_zval(&env_data, ZSTR_VAL(env_data_item_str_index), env_data_item);
                 break;
         }
@@ -1754,7 +1800,6 @@ void send_agent_msg(zval *profile)
     while (get_data_item = zend_hash_get_current_data_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_pos)) {
         switch (zend_hash_get_current_key_ex(Z_ARRVAL(PG(http_globals)[TRACK_VARS_GET]), &get_data_item_str_index, &get_data_item_num_index, &get_data_pos)) {
             case HASH_KEY_IS_STRING:
-                savelog(ZSTR_VAL(get_data_item_str_index));
                 add_assoc_zval(&get_data, ZSTR_VAL(get_data_item_str_index), get_data_item);
                 break;
         }
@@ -1769,78 +1814,5 @@ void send_agent_msg(zval *profile)
     add_assoc_zval(&send_data, "meta", &meta_data);
     add_assoc_zval(&send_data, "profile", profile);
 
-    // Encode profile data to json
-	smart_str buf = {0};
-    php_json_encode(&buf, &send_data, 0);
-    smart_str_0(&buf);
-    if (buf.s) {
-        savelog(ZSTR_VAL(buf.s));
-    }
-    else {
-        ok = 0;
-    }
-
-    savelog("s1");
-
-    if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
-		ok = 0;
-	}
-
-    savelog("s2");
-
-    if (ok) {
-        savelog("s2ok");
-
-		memset(&addr, 0, sizeof(addr));
-		addr.sun_family = AF_UNIX;
-		strcpy(addr.sun_path, CLIENT_SOCK_FILE);
-		unlink(CLIENT_SOCK_FILE);
-		if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-			ok = 0;
-		}
-	}
-
-    savelog("s3");
-
-    if (ok) {
-        savelog("s3ok");
-		memset(&addr, 0, sizeof(addr));
-		addr.sun_family = AF_UNIX;
-		strcpy(addr.sun_path, SERVER_SOCK_FILE);
-		if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-            sprintf(err,"%d", errno);
-            savelog(err);
-            savelog(strerror(errno));
-            ok = 0;
-		}
-	}
-
-    savelog("s4");
-
-    if (ok) {
-        savelog("s4ok");
-		//strcpy(buff, "Hello");
-		//if (send(fd, buff, strlen(buff)+1, 0) == -1) {
-        if (send(fd, ZSTR_VAL(buf.s), ZSTR_LEN(buf.s)+1, 0) == -1) {
-			ok = 0;
-		}
-
-        close(fd);
-        ok = 0;
-
-        smart_str_free(&buf);
-	}
-
-    /*
-    savelog("s5");
-
-    if (ok) {
-        savelog("s5ok");
-		if ((len = recv(fd, buff, 8192, 0)) < 0) {
-			ok = 0;
-		}
-	}*/
-
-    //unlink (SERVER_SOCK_FILE);
-	unlink (CLIENT_SOCK_FILE);
+    return send_data;
 }
