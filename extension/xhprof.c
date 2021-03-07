@@ -1633,9 +1633,10 @@ void hp_init_trace_callbacks()
 {
     hp_trace_callback callback;
 
+    /*
     if (!XHPROF_G(collect_additional_info)) {
         return;
-    }
+    }*/
 
     if (XHPROF_G(trace_callbacks)) {
         return;
